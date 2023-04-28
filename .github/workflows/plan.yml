@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
     types: [ closed, opened, synchronize, reopened ]
@@ -14,33 +12,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Checkout Pull Request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_URL="${{ github.event.issue.pull_request.url }}"
-          PR_NUM=${PR_URL##*/}
-          echo "Checking out from PR #$PR_NUM based on URL: $PR_URL"
-          hub pr checkout $PR_NUM
-        if: github.event_name == 'issue_comment'
-        
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v1'
+      - name: digger run
+        uses: diggerhq/digger@v0.1.12
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
-
-      - name: 'Use gcloud CLI'
-        run: 'gcloud info'
-
-      - name: digger tfrun
-        uses: diggerhq/tfrun@main
+          setup-google-cloud: true
+          google-auth-credentials: '${{ secrets.GCP_CREDENTIALS }}'
         env:
           LOCK_PROVIDER: gcp
           GITHUB_CONTEXT: ${{ toJson(github) }}
